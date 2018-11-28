@@ -38,6 +38,7 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -58,6 +59,11 @@ import com.toedter.calendar.JCalendar;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.SwingConstants;
 import javax.swing.JScrollBar;
+import javax.swing.JRadioButton;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 public class Inicio extends JFrame {
 
@@ -84,7 +90,7 @@ public class Inicio extends JFrame {
 	private JTextField textNNCliente;
 	private JTextField textTellClient;
 	private JTextField textDirecClient;
-	private JTable TconsultaCliente = new JTable();
+	private JTable TconsultaCliente;
 	private JTextField textIDCliente;
 	private JTextField textIDreparCliente;
 	private JTextField textNNclienteRepar;
@@ -92,7 +98,10 @@ public class Inicio extends JFrame {
 	private JTextField textIDClienteRepar;
 	private JTable table;
 	private JDateChooser dateFechaN;
-	private JScrollPane scrollPane1 = new JScrollPane(); 
+	private JScrollPane scrollPane1 = new JScrollPane();
+	private JButton btnActualizarCliente;
+	private JButton btnCrearCliente;
+	private JRadioButton rdbtnEstado;
 
 	private void LimpiarCampos() {
 		// Limpiar campos después de ser actulizados
@@ -111,8 +120,8 @@ public class Inicio extends JFrame {
 	}
 
 //metodo para traer todo lo que hay en la base de datos 
-	private void buscartodo() {
-		clearTabla();
+	private void buscartodoUsuario() {
+		clearTabla(this.Tconsulta);
 		String parametros[] = {};
 		/**
 		 * Se hace uso de una estructa de datos dinámica de Java (ArrayList<Usuario>)
@@ -191,7 +200,7 @@ public class Inicio extends JFrame {
 		JButton btnBuscar = new JButton("Buscar");
 		btnBuscar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				clearTabla();
+				clearTabla(Tconsulta);
 				try {
 					MostrarConsulta();
 				} catch (Exception e) {
@@ -199,7 +208,6 @@ public class Inicio extends JFrame {
 				}
 			}
 		});
-
 		JScrollPane scrollPane = new JScrollPane();
 
 		JButton btnModificar = new JButton("Modificar");
@@ -242,7 +250,7 @@ public class Inicio extends JFrame {
 						}
 					}
 					tabbedPane_2.setSelectedIndex(1); // Pasamos del panel actual al panel 2
-					buscartodo();
+					buscartodoUsuario();
 				} else {
 					System.out.println(fila_seleccionada);
 				}
@@ -252,28 +260,24 @@ public class Inicio extends JFrame {
 		JButton btnEliminar = new JButton("Eliminar");
 		btnEliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
 				int fila_seleccionada = Tconsulta.getSelectedRow();
 				if (fila_seleccionada >= 0) {
 					btnCrearUsuario.setEnabled(false); // deshabilita el boton de crear usuario
-					tabbedPane_2.setTitleAt(1, "Actualizar"); // cambiamos el titulo crear usuario por actualizar
 					DefaultTableModel modelo = (DefaultTableModel) Tconsulta.getModel();
-					int fila = Tconsulta.getSelectedRow();
-					String idUsuario = modelo.getValueAt(fila, 0).toString();
+					String idUsuario = modelo.getValueAt(fila_seleccionada, 0).toString();
 					String parametros[] = { idUsuario };
 					GestionUsuario.EjecutaQuery("DELETE FROM user_login WHERE id = ?;", parametros);
-					buscartodo();
+					buscartodoUsuario();
 				} else {
 					System.out.println(fila_seleccionada);
 				}
-
 			}
 		});
 
 		JButton btnBuscarTodo = new JButton("Buscar todo");
 		btnBuscarTodo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				buscartodo();
+				buscartodoUsuario();
 			}
 		});
 
@@ -282,33 +286,30 @@ public class Inicio extends JFrame {
 				.addGroup(gl_panelConsultaUsuario.createSequentialGroup().addGroup(gl_panelConsultaUsuario
 						.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelConsultaUsuario.createSequentialGroup().addContainerGap()
-								.addGroup(gl_panelConsultaUsuario.createParallelGroup(Alignment.LEADING)
-										.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE)
-										.addGroup(gl_panelConsultaUsuario.createSequentialGroup()
-												.addComponent(textIdUsuario, GroupLayout.PREFERRED_SIZE, 161,
-														GroupLayout.PREFERRED_SIZE)
-												.addGap(10)
-												.addComponent(btnBuscar, GroupLayout.PREFERRED_SIZE, 89,
-														GroupLayout.PREFERRED_SIZE)
-												.addPreferredGap(ComponentPlacement.RELATED).addComponent(btnBuscarTodo)
-												.addPreferredGap(ComponentPlacement.UNRELATED)
-												.addComponent(btnModificar, GroupLayout.PREFERRED_SIZE, 88,
-														GroupLayout.PREFERRED_SIZE)
-												.addPreferredGap(ComponentPlacement.UNRELATED).addComponent(btnEliminar,
-														GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))))
+								.addComponent(textIdUsuario, GroupLayout.PREFERRED_SIZE, 161,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(10)
+								.addComponent(btnBuscar, GroupLayout.PREFERRED_SIZE, 89, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED).addComponent(btnBuscarTodo)
+								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(btnModificar, GroupLayout.PREFERRED_SIZE, 88, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(btnEliminar, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_panelConsultaUsuario.createSequentialGroup().addGap(38).addComponent(
 								lblIdentificacion, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE)))
-						.addContainerGap()));
+						.addContainerGap(92, Short.MAX_VALUE))
+				.addGroup(Alignment.TRAILING, gl_panelConsultaUsuario.createSequentialGroup().addGap(20)
+						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)));
 		gl_panelConsultaUsuario.setVerticalGroup(gl_panelConsultaUsuario.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_panelConsultaUsuario.createSequentialGroup().addGap(16).addComponent(lblIdentificacion)
-						.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(Alignment.LEADING, gl_panelConsultaUsuario.createSequentialGroup().addGap(16)
+						.addComponent(lblIdentificacion).addPreferredGap(ComponentPlacement.RELATED)
 						.addGroup(gl_panelConsultaUsuario.createParallelGroup(Alignment.LEADING)
 								.addComponent(textIdUsuario, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
 								.addGroup(gl_panelConsultaUsuario.createSequentialGroup().addGap(2)
 										.addGroup(gl_panelConsultaUsuario.createParallelGroup(Alignment.BASELINE)
 												.addComponent(btnBuscar).addComponent(btnBuscarTodo)
 												.addComponent(btnModificar).addComponent(btnEliminar))))
-						.addPreferredGap(ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+						.addPreferredGap(ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
 						.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 163, GroupLayout.PREFERRED_SIZE)
 						.addContainerGap()));
 
@@ -320,14 +321,6 @@ public class Inicio extends JFrame {
 		Tconsulta.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "ID", "Nom. Persona.", "Edad",
 				"Teléfono", "Dirección", "Rol", "Nom. Usuario", "Cláve" }));
 		scrollPane.setViewportView(Tconsulta);
-
-		// Creamos los encabezados para la tabla donde se listan los clientes
-		//scrollPane1.setRowHeaderView(TconsultaCliente);
-		//panelConsultaUsuario.setLayout(gl_panelConsultaUsuario);
-		//TconsultaCliente = new JTable();
-		TconsultaCliente.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "idCliente", "Cédula",
-				"Nombre", "Fecha nacimiento", "Teléfono", "Dirección", "Estado" }));
-		scrollPane1.setViewportView(TconsultaCliente);
 
 		panelCrearUsuario = new JPanel();
 		tabbedPane_2.addTab("Crear usuario", null, panelCrearUsuario, null);
@@ -465,7 +458,7 @@ public class Inicio extends JFrame {
 
 				// Limpiar campos después de ser actulizados
 				LimpiarCampos();
-				buscartodo();
+				buscartodoUsuario();
 			}
 		});
 		btnActualizar.setBounds(377, 173, 89, 23);
@@ -495,12 +488,20 @@ public class Inicio extends JFrame {
 		tabbedPane_3.addTab("Consultar cliente", null, panelConsultaCliente, null);
 		panelConsultaCliente.setLayout(null);
 
-		//scrollPane1 = new JScrollPane();
+		// scrollPane1 = new JScrollPane();
 		scrollPane1.setBounds(10, 163, 633, 170);
 		panelConsultaCliente.add(scrollPane1);
 
-		//TconsultaCliente = new JTable();
+		TconsultaCliente = new JTable();
 		scrollPane1.setRowHeaderView(TconsultaCliente);
+
+		// panelConsultaUsuario.setLayout(gl_panelConsultaUsuario);
+		// panelConsultaCliente.setLayout();
+
+		// Creamos los encabezados para la tabla donde se listan los clientes
+		TconsultaCliente.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "idCliente", "Cédula",
+				"Nombre", "Fecha nacimiento", "Teléfono", "Dirección", "Estado" }));
+		scrollPane1.setViewportView(TconsultaCliente);
 
 		JLabel lblIdentificacion_3 = new JLabel("Identificacion");
 		lblIdentificacion_3.setBounds(10, 30, 159, 14);
@@ -515,24 +516,18 @@ public class Inicio extends JFrame {
 		JButton btnBuscarCliente = new JButton("Buscar");
 		btnBuscarCliente.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				clearTabla(TconsultaCliente);
 				String parametros[] = { textIDCliente.getText() };
 				ResultSet rs = GestionUsuario.Consultas("SELECT * FROM cliente WHERE Cedula = ?", parametros);
 				ArrayList<Cliente> ALC = new ArrayList<Cliente>();
 				try {
 					while (rs.next()) {
-						/*
-						 * System.out.println(rs.getString(1)); System.out.println(rs.getString(2));
-						 * System.out.println(rs.getString(3)); System.out.println(rs.getString(4));
-						 * System.out.println(rs.getString(5)); System.out.println(rs.getString(6));
-						 * System.out.println(rs.getString(7));
-						 */
 						ALC.add(new Cliente(Integer.parseInt(rs.getString(1)), rs.getString(2), rs.getString(3),
 								rs.getString(4), rs.getString(5), rs.getString(6), Integer.parseInt(rs.getString(7))));
 					}
 					// Se optiene el DefaultTableModel de la tabla Tconsulta
 					DefaultTableModel modelo = (DefaultTableModel) TconsultaCliente.getModel();
 					int num_colums = modelo.getColumnCount();
-					System.out.println("Entra");
 					for (Cliente clie : ALC) {
 						Object[] fila = new Object[num_colums];
 						fila[0] = clie.getIdCliente();
@@ -554,14 +549,124 @@ public class Inicio extends JFrame {
 		panelConsultaCliente.add(btnBuscarCliente);
 
 		JButton btnBuscarTodoClie = new JButton("Buscar todo");
+		btnBuscarTodoClie.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				clearTabla(TconsultaCliente);
+				String parametros[] = {};
+				ResultSet rs = GestionUsuario.Consultas("SELECT * FROM cliente", parametros);
+				ArrayList<Cliente> ALC = new ArrayList<Cliente>();
+				try {
+					while (rs.next()) {
+						ALC.add(new Cliente(Integer.parseInt(rs.getString(1)), rs.getString(2), rs.getString(3),
+								rs.getString(4), rs.getString(5), rs.getString(6), Integer.parseInt(rs.getString(7))));
+					}
+					// Se optiene el DefaultTableModel de la tabla TconsultaCliente
+					DefaultTableModel modelo = (DefaultTableModel) TconsultaCliente.getModel();
+					int num_colums = modelo.getColumnCount();
+					for (Cliente clie : ALC) {
+						Object[] fila = new Object[num_colums];
+						fila[0] = clie.getIdCliente();
+						fila[1] = clie.getCedula();
+						fila[2] = clie.getNombre();
+						fila[3] = clie.getFe_naci();
+						fila[4] = clie.getTelefono();
+						fila[5] = clie.getDireccion();
+						fila[6] = clie.getEstado();
+						// Añade la fila al modelo de la tabla
+						modelo.addRow(fila);
+					}
+				} catch (Exception ex) {
+					System.out.println("Error: " + ex);
+				}
+			}
+		});
 		btnBuscarTodoClie.setBounds(121, 73, 89, 23);
 		panelConsultaCliente.add(btnBuscarTodoClie);
 
 		JButton btnModificarCliente = new JButton("Modificar");
+
+		btnModificarCliente.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Se optiene el índice del item actualmente seleccionado en la tabla Tconsulta
+				int fila_seleccionada = TconsultaCliente.getSelectedRow(); // Si no se ha seleccionado una fila, se
+																			// retorna -1
+				// Si existe una fila seleccionada en la tabla
+				if (fila_seleccionada >= 0) {
+					btnActualizarCliente.setEnabled(true);
+					textIDCCliente.setEnabled(false);
+					btnCrearCliente.setEnabled(false); // deshabilita el boton de crear usuario
+					tabbedPane_3.setTitleAt(1, "Actualizar"); // cambiamos el titulo crear usuario por actualizar
+					DefaultTableModel modelo = (DefaultTableModel) TconsultaCliente.getModel();
+					// Pasamos los datos de la tabla a los campos de texto de la pestaña "Crear
+					// Crear o Actualizar"
+					textIDCCliente.setText(modelo.getValueAt(fila_seleccionada, 1).toString());
+					textNNCliente.setText(modelo.getValueAt(fila_seleccionada, 2).toString());
+
+					// "2018-11-22"
+					String fecha = modelo.getValueAt(fila_seleccionada, 3).toString();
+					int dia, mes, anio;
+					anio = Integer.parseInt(fecha.substring(0, fecha.indexOf("-")));
+					fecha = fecha.substring(fecha.indexOf("-") + 1, fecha.length());
+					mes = Integer.parseInt(fecha.substring(0, fecha.indexOf("-")));
+					fecha = fecha.substring(fecha.indexOf("-") + 1, fecha.length());
+					dia = Integer.parseInt(fecha);
+
+					System.out.println(dia);
+					System.out.println(mes);
+					System.out.println(anio);
+
+					GregorianCalendar Calendario = new GregorianCalendar();
+					Calendario.set(anio, (mes - 1), dia);
+					dateFechaN.setDateFormatString("YYYY-MM-dd");
+					dateFechaN.setCalendar(Calendario);
+					// dateFechaN.setDate(FechaIngreso);
+					// setText(modelo.getValueAt(fila_seleccionada, 3).toString());
+					textTellClient.setText(modelo.getValueAt(fila_seleccionada, 4).toString());
+					textDirecClient.setText(modelo.getValueAt(fila_seleccionada, 5).toString());
+					/**
+					 * Controla la representación del estado del cliente en un componente
+					 * RadioButton
+					 */
+					if (Integer.parseInt(modelo.getValueAt(fila_seleccionada, 6).toString()) == 1) {
+						rdbtnEstado.setText("Habilitado");
+						rdbtnEstado.setSelected(true);
+						System.out.println("Entra cuando es 1");
+					} else {
+						// De lo contrario es cero
+						rdbtnEstado.setText("Deshabilitado");
+						rdbtnEstado.setSelected(false);
+						System.out.println("Entra cuando no es 1");
+					}
+					tabbedPane_3.setSelectedIndex(1); // Pasamos del panel actual al panel 2
+					buscartodoCliente();
+
+				} else {
+					System.out.println(fila_seleccionada);
+				}
+
+			}
+		});
 		btnModificarCliente.setBounds(246, 73, 89, 23);
 		panelConsultaCliente.add(btnModificarCliente);
 
 		JButton btnEliminarCliente = new JButton("Eliminar");
+		btnEliminarCliente.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int fila_seleccionada = TconsultaCliente.getSelectedRow();
+				if (fila_seleccionada >= 0) {
+					btnCrearCliente.setEnabled(false); // deshabilita el boton de crear usuario
+					DefaultTableModel modelo = (DefaultTableModel) TconsultaCliente.getModel();
+					String idCliente = modelo.getValueAt(fila_seleccionada, 0).toString();
+					String parametros[] = { idCliente };
+					GestionUsuario.EjecutaQuery("DELETE FROM cliente WHERE idCliente = ?;", parametros);
+					clearTabla(TconsultaCliente);
+					buscartodoCliente(); // Equivalente a actualizar los registros existentes
+				} else {
+					System.out.println(fila_seleccionada);
+				}
+
+			}
+		});
 		btnEliminarCliente.setBounds(371, 73, 89, 23);
 		panelConsultaCliente.add(btnEliminarCliente);
 
@@ -579,7 +684,7 @@ public class Inicio extends JFrame {
 		textIDCCliente.setColumns(10);
 
 		JLabel lblNombreCompleto = new JLabel("Nombre completo");
-		lblNombreCompleto.setBounds(288, 78, 103, 14);
+		lblNombreCompleto.setBounds(305, 78, 103, 14);
 		panelCrearCliente.add(lblNombreCompleto);
 
 		textNNCliente = new JTextField();
@@ -592,7 +697,7 @@ public class Inicio extends JFrame {
 		panelCrearCliente.add(lblEdad_1);
 
 		JLabel lblTelefono_1 = new JLabel("Telefono");
-		lblTelefono_1.setBounds(298, 109, 46, 14);
+		lblTelefono_1.setBounds(343, 109, 46, 14);
 		panelCrearCliente.add(lblTelefono_1);
 
 		textTellClient = new JTextField();
@@ -609,7 +714,7 @@ public class Inicio extends JFrame {
 		panelCrearCliente.add(textDirecClient);
 		textDirecClient.setColumns(10);
 		// ClIENTE
-		JButton btnCrearCliente = new JButton("Crear cliente");
+		btnCrearCliente = new JButton("Crear cliente");
 		btnCrearCliente.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				/**
@@ -637,13 +742,56 @@ public class Inicio extends JFrame {
 		btnCancelarCliente.setBounds(269, 206, 89, 23);
 		panelCrearCliente.add(btnCancelarCliente);
 
-		JButton btnActualizarCliente = new JButton("Actualizar");
+		btnActualizarCliente = new JButton("Actualizar");
+		btnActualizarCliente.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				textIDCCliente.setEnabled(true);
+				btnCrearCliente.setEnabled(true); // deshabilita el boton de crear usuario
+				tabbedPane_3.setTitleAt(1, "crear cliente"); // cambiamos el titulo crear cliente por actualizar
+				String estado = (rdbtnEstado.isSelected()) ? "1" : "0";
+				String parametros[] = { textIDCCliente.getText(), textNNCliente.getText(),
+						new SimpleDateFormat("yyyy-MM-dd").format(dateFechaN.getDate()), textTellClient.getText(),
+						textDirecClient.getText(), estado, textIDCCliente.getText() };
+				GestionUsuario.EjecutaQuery(
+						"UPDATE cliente SET Cedula = ?, Nombre = ?, Fe_naci = ?, Telefono = ? ,Direccion = ?, estado = ? WHERE Cedula = ?;",
+						parametros);
+
+				// Limpiar campos después de ser actulizados
+				LimpiarCamposCliente();
+				buscartodoCliente();
+
+			}
+		});
+		btnActualizarCliente.setEnabled(false);
 		btnActualizarCliente.setBounds(433, 206, 89, 23);
 		panelCrearCliente.add(btnActualizarCliente);
 
 		dateFechaN = new JDateChooser();
 		dateFechaN.setBounds(162, 106, 116, 20);
 		panelCrearCliente.add(dateFechaN);
+
+		rdbtnEstado = new JRadioButton("Estado");
+		rdbtnEstado.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent ev) {
+				if (ev.getStateChange() == 1) {
+					// Habilitado
+					rdbtnEstado.setText("Habilitado");
+				} else {
+					// Deshabilitado
+					rdbtnEstado.setText("Deshabilitado");
+				}
+				// 1 Habilitado
+				// 2 Deshabilitado
+			}
+		});
+
+		rdbtnEstado.setBounds(418, 146, 109, 23);
+		panelCrearCliente.add(rdbtnEstado);
+
+		JLabel lblEstado = new JLabel("Estado");
+		lblEstado.setBounds(343, 150, 46, 14);
+		panelCrearCliente.add(lblEstado);
 
 		JPanel panelReparaciones = new JPanel();
 		tabbedPane.addTab("Reparaciones", null, panelReparaciones, null);
@@ -757,9 +905,10 @@ public class Inicio extends JFrame {
 		textIDCCliente.setText("");
 		textNNCliente.setText("");
 		dateFechaN.setDate(null);
-		;
 		textTellClient.setText("");
 		textDirecClient.setText("");
+		rdbtnEstado.setSelected(false);
+		rdbtnEstado.setText("Deshabilitado");
 	}
 
 	// Utiliza las funciones declaradas en la clase GestUsuario para efectuar la
@@ -787,13 +936,56 @@ public class Inicio extends JFrame {
 	private static void addPopup(Component component, final JPopupMenu popup) {
 	}
 
-	// Limpiar y recargar los datos de la tabla user_login
-	private void clearTabla() {
-		DefaultTableModel modelo = (DefaultTableModel) Tconsulta.getModel();
+	/*
+	 * Limpiar y recargar los datos de la tabla user_login private void
+	 * clearTablaUsuario() { DefaultTableModel modelo = (DefaultTableModel)
+	 * Tconsulta.getModel(); int filas = modelo.getRowCount(); for (int i = 0; i <
+	 * filas; i++) { // Rmovemos las filas de la tabla eliminando siempre la de la
+	 * posición 0 modelo.removeRow(0); } }
+	 */
+
+	// Limpiar y los datos de la tabla que se pase por parámetro
+	private void clearTabla(JTable tabla) {
+		DefaultTableModel modelo = (DefaultTableModel) tabla.getModel();
 		int filas = modelo.getRowCount();
 		for (int i = 0; i < filas; i++) {
 			// Rmovemos las filas de la tabla eliminando siempre la de la posición 0
 			modelo.removeRow(0);
+		}
+	}
+
+	private void buscartodoCliente() {
+		clearTabla(this.TconsultaCliente);
+		String parametros[] = {};
+		/**
+		 * Se hace uso de una estructa de datos dinámica de Java (ArrayList<Cliente>)
+		 */
+		ArrayList<Cliente> ALC = new ArrayList<Cliente>();
+		ResultSet rs = GestionUsuario.Consultas("SELECT * FROM cliente;", parametros);
+		try {
+			while (rs.next()) {
+				// Se agregan al ArrayList<Usuario> todos los registros de la tabla
+				// TconsultaCliente (por fila)
+				ALC.add(new Cliente(Integer.parseInt(rs.getString(1)), rs.getString(2), rs.getString(3),
+						rs.getString(4), rs.getString(5), rs.getString(6), Integer.parseInt(rs.getString(7))));
+			}
+			// Se optiene el DefaultTableModel de la tabla TconsultaCliente
+			DefaultTableModel modelo = (DefaultTableModel) TconsultaCliente.getModel();
+			int num_colums = modelo.getColumnCount();
+			for (Cliente cli : ALC) {
+				Object[] fila = new Object[num_colums];
+				fila[0] = cli.getIdCliente();
+				fila[1] = cli.getCedula();
+				fila[2] = cli.getNombre();
+				fila[3] = cli.getFe_naci();
+				fila[4] = cli.getTelefono();
+				fila[5] = cli.getDireccion();
+				fila[6] = cli.getEstado();
+				// Añade la fila al modelo de la tabla
+				modelo.addRow(fila);
+			}
+		} catch (Exception e) {
+			System.out.println("Error: " + e);
 		}
 	}
 }
