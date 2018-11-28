@@ -10,6 +10,9 @@ public class conexion {
 		Connection con = null; // Connectionjava.sql https://youtu.be/V1IeAjvWdE4
 
 		try {
+			/**
+			  *
+			 **/
 			Class.forName("com.mysql.jdbc.Driver");// cargar el driver de SQL
 			String url = "jdbc:mysql://localhost/calzaditos";
 			String user = "root";
